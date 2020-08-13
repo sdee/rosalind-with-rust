@@ -1,0 +1,167 @@
+use counter::Counter;
+use regex::Regex;
+use std::collections::HashMap;
+use std::collections::HashSet;
+
+// Problem ID: DNA
+pub fn count_nucleotides(s: &String) {
+    let counter = s.chars().collect::<Counter<_>>();
+    let base_count = counter.into_map();
+    let a_count = if base_count.contains_key(&'A') {base_count[&'A']} else {0};
+    let c_count = if base_count.contains_key(&'C') {base_count[&'C']} else {0};
+    let g_count = if base_count.contains_key(&'G') {base_count[&'G']} else {0};
+    let t_count = if base_count.contains_key(&'T') {base_count[&'T']} else {0};
+    println!("{} {} {} {}", a_count, c_count, g_count, t_count);
+}
+
+// Problem ID: HAMM
+pub fn calculate_hamming_distance(s1: &String, s2: &String) {
+    let mut hamming_distance = 0;
+    let iter = s1.chars().zip(s2.chars()); 
+    for (i,j) in iter {
+        if i!=j {
+            hamming_distance+=1;
+        }
+    }
+    println!("{}", hamming_distance);
+}
+
+// Problem ID: GC
+pub fn calculate_gc_content(text: &String){
+    let lines = text.lines();
+    let mut gc_by_sequence = HashMap::new();
+    let mut identifier = "";
+    for line in lines {
+        let rosalind_re = Regex::new(r".*>(.*)").unwrap();
+        if line.contains(">") {
+            match rosalind_re.captures(line) {
+                Some(x) => identifier=x.at(1).unwrap(),
+                None => unreachable!()
+            }
+        }
+        else {
+            let base_count = line.chars().collect::<Counter<_>>();
+            let gc_content = base_count[&'G'] + base_count[&'C'];
+            let total_num_bases = gc_content + base_count[&'A']+base_count[&'T'];
+            let gc_score:f64 = gc_content as f64/total_num_bases as f64;
+            gc_by_sequence.insert(identifier, gc_score);
+        }
+    }
+    let highest_gc_sequence = gc_by_sequence.iter().max_by(|a,b| a.1.partial_cmp(b.1).unwrap());
+    println!("{:?} has highest GC content with a GC content {}", highest_gc_sequence.unwrap().0, highest_gc_sequence.unwrap().1);
+}
+
+// Problem ID: TRAN
+pub fn calculate_transition_and_transversion(s1: &String, s2: &String){
+    let purines: HashSet<char> =  "AG".chars().map(|c| c).collect();
+    let pyrimidines: HashSet<char> = "CT".chars().map(|c| c).collect();
+    let mut number_transitions = 0;
+    let mut number_transversions = 0;
+    let iter = s1.chars().zip(s2.chars()); 
+    for (i,j) in iter {
+        if i!=j {
+            if (purines.contains(&i) && purines.contains(&j)) || (pyrimidines.contains(&i) && pyrimidines.contains(&j)) {
+                number_transitions +=1;
+            }
+            else {
+                number_transversions+=1;    
+            }
+        }
+    }
+    let transition_transversion_ratio:f64 = number_transitions as f64/number_transversions as f64;
+    println!("Transition/transversion ratio: {:?}", transition_transversion_ratio);
+}
+
+// Problem: SSEQ
+pub fn find_splice_motif(s1: &String, s2: &String) {
+    let mut motif_iter = s2.chars();
+    let mut char_need_to_match = motif_iter.next();
+    let mut splice_coords:Vec<String>= Vec::new();
+    for (i, c) in s1.chars().enumerate(){
+        if c==char_need_to_match.unwrap(){
+            splice_coords.push(i.to_string());
+            if motif_iter.as_str()=="" {
+                println!("Coords: {}", splice_coords.join(" "));
+                break;
+            }
+            char_need_to_match = motif_iter.next();
+        }
+    }
+}
+
+// Problem: Generate the k-mer Composition of a String
+pub fn generate_kmer_composition(s1: &String, k:usize) {
+    let chars: Vec<char> = s1.chars().collect();
+    for window in chars.windows(k) {
+        let s: String = window.into_iter().collect();
+        println!("{}", s);
+        // let s2: String = window.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join(" ");
+        // println!("{}", s2);        
+    }
+}
+
+// Problem: Reconstruct a String from its Genome Path
+pub fn reconstruct_sequence_from_kmer() {
+    let kmers = [
+        "ACCGA".to_string(),
+        "CCGAA".to_string(),
+        "CGAAG".to_string(),
+        "GAAGC".to_string(),
+        "AAGCT".to_string() 
+    ];
+    let mut sequence = String::new();
+    let k:usize = kmers[0].len();
+    for (i, kmer) in kmers.iter().enumerate() {
+        if i==0 {
+            sequence+=kmer;
+        }
+        else {
+            sequence+=&kmer.chars().nth(k-1).unwrap().to_string();
+        }
+        
+    }
+}
+
+fn main() {
+    let s = String::from("AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGC");
+    count_nucleotides(&s);
+
+    let s1 = String::from("GAGCCTACTAACGGGAT");
+    let s2 = String::from("CATCGTAATGACGGCCT");
+    calculate_hamming_distance(&s1, &s2);
+
+    let text = String::from(">Rosalind_6404
+    CCTGCGGAAGATCGGCACTAGAATAGCCAGAACCGTTTCTCTGAGGCTTCCGGCCTTCCCTCCCACTAATAATTCTGAGG
+    >Rosalind_5959
+    CCATCGGTAGCGCATCCTTAGTCCAATTAAGTCCCTATCCAGGCGCTCCGCCGAAGGTCTATATCCATTTGTCAGCAGACACGC
+    >Rosalind_0808
+    CCACCCTCGTGGTATGGCTAGGCATTCAGGAACCGGAGAACGCTTCAGACCAGCCCGGACTGGGAACCTGCGGGCAGTAGGTGGAAT");
+
+    calculate_gc_content(&text);
+
+    let s3 = String::from("GCAACGCACAACGAAAACCCTTAGGGACTGGATTATTTCGTGATCGTTGTAGTTATTGGAAGTACGGGCATCAACCCAGTT");
+    let s4 = String::from("TTATCTGACAAAGAAAGCCGTCAACGGCTGGATAATTTCGCGATCGTGCTGGTTACTGGCGGTACGAGTGTTCCTTTGGGT");
+    calculate_transition_and_transversion(&s3, &s4); 
+
+    let s5 = String::from("ACGTACGTGACG");
+    let s6 = String::from("GTA");
+    find_splice_motif(&s5, &s6);
+
+    let s7 = String::from("ACGTCCCCACGTGACG");
+    let s8 = String::from("GTA");
+    find_splice_motif(&s7, &s8); 
+
+
+    let s9 = String::from("CAATCCAAC");
+    generate_kmer_composition(&s9, 5);
+
+    let kmers = [
+        "ACCGA".to_string(),
+        "CCGAA".to_string(),
+        "CGAAG".to_string(),
+        "GAAGC".to_string(),
+        "AAGCT".to_string() 
+    ];
+
+    reconstruct_sequence_from_kmer();
+}
