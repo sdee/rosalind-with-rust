@@ -118,8 +118,38 @@ pub fn reconstruct_sequence_from_kmer() {
         else {
             sequence+=&kmer.chars().nth(k-1).unwrap().to_string();
         }
-        
     }
+}
+
+// Given a collection of kmers, construct an adjacency list representing the overlap graph. Handles graphs that aren't a strict linked list but 
+pub fn construct_overlap_graph() {
+let kmers = [
+    "ATGCG".to_string(),
+    "GCATG".to_string(),
+    "CATGC".to_string(),
+    "AGGCA".to_string(),
+    "GGCAT".to_string()
+];
+let mut suffixes = HashMap::new();
+let mut prefixes = HashMap::new();
+
+let mut sequence = String::new();
+let k:usize = kmers[0].len();
+
+for kmer in kmers.iter() {
+    prefixes.entry(&kmer[0..k-1]).or_insert(Vec::new()).push(kmer);
+    suffixes.entry(&kmer[1..k]).or_insert(Vec::new()).push(kmer);
+}
+for (prefix, sequences_with_suffix) in &suffixes {
+    let matches = &prefixes.get(prefix);
+    for seq1 in sequences_with_suffix {
+        if matches.is_some(){
+            for seq2 in matches.unwrap().iter() {
+                println!("{} -> {}", seq1, seq2);
+            }
+        }
+    }
+}
 }
 
 fn main() {
@@ -164,4 +194,6 @@ fn main() {
     ];
 
     reconstruct_sequence_from_kmer();
+
+    construct_overlap_graph();
 }
