@@ -158,7 +158,7 @@ pub fn construct_overlap_graph() {
     let mut suffixes = HashMap::new();
     let mut prefixes = HashMap::new();
 
-    let mut sequence = String::new();
+    let sequence = String::new();
     let k: usize = kmers[0].len();
 
     for kmer in kmers.iter() {
@@ -168,8 +168,8 @@ pub fn construct_overlap_graph() {
             .push(kmer);
         suffixes.entry(&kmer[1..k]).or_insert(Vec::new()).push(kmer);
     }
-    for (prefix, sequences_with_suffix) in &suffixes {
-        let matches = &prefixes.get(prefix);
+    for (suffix, sequences_with_suffix) in &suffixes {
+        let matches = &prefixes.get(suffix);
         for seq1 in sequences_with_suffix {
             if matches.is_some() {
                 for seq2 in matches.unwrap().iter() {
@@ -178,6 +178,24 @@ pub fn construct_overlap_graph() {
             }
         }
     }
+}
+
+// generate kmers, create adjacency graph, print
+pub fn construct_de_bruijn_graph_from_string() {
+    let k: usize = 4;
+    let sequence = "AAGATTCTCTAC".to_string();
+    let mut prev_window:String = sequence[0..k - 1].to_string();
+    let mut current_window:String;
+    let mut graph = HashMap::new();
+    let chars: Vec<char> = sequence.chars().collect();
+    for window in chars[1..].windows(k - 1) {
+       current_window = window.into_iter().collect();
+       graph.entry(prev_window).or_insert(Vec::new()).push(current_window.clone());
+       prev_window = current_window; 
+    }
+    for (seq1, value) in &graph {
+          println!("{}->{}", seq1, value.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", "));
+    } 
 }
 
 fn main() {
@@ -229,4 +247,6 @@ fn main() {
     reconstruct_sequence_from_kmer();
 
     construct_overlap_graph();
+
+    construct_de_bruijn_graph_from_string();
 }
