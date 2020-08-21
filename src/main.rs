@@ -2,6 +2,26 @@ use counter::Counter;
 use regex::Regex;
 use std::collections::HashMap;
 use std::collections::HashSet;
+#[macro_use] extern crate maplit;
+
+// Problem: rvec
+pub fn reverse_complement(s: &str) {
+    let complements = hashmap!{'A'=>'T', 'T'=>'A', 'C'=>'G', 'G'=>'C'};
+    let reverse_complement = s.chars().rev().map(|c| complements[&c]).collect::<String>();
+    println!("{}", reverse_complement);
+}
+
+pub fn translation(s: &str) {
+    let codons = hashmap!{"UUU"=>"F", "CUU"=>"L", "GUU"=>"V"};
+    for window in s.chars().collect::<Vec<char>>().windows(3) {
+        println!("{:?}", window);
+
+        let codon = window.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join("");
+        println!("{}", codon);
+        println!("{:?}",codons.get(codon.to_string())  );
+    }
+}
+
 
 // Problem ID: DNA
 pub fn count_nucleotides(s: &String) {
@@ -146,7 +166,7 @@ pub fn reconstruct_sequence_from_kmer() {
     }
 }
 
-// Given a collection of kmers, construct an adjacency list representing the overlap graph. Handles graphs that aren't a strict linked list but
+// Given a collection of kmers, construct an adjacency list representing the overlap graph. Handles graphs that aren't a strict linked list but not cycles
 pub fn construct_overlap_graph() {
     let kmers = [
         "ATGCG".to_string(),
@@ -184,18 +204,29 @@ pub fn construct_overlap_graph() {
 pub fn construct_de_bruijn_graph_from_string() {
     let k: usize = 4;
     let sequence = "AAGATTCTCTAC".to_string();
-    let mut prev_window:String = sequence[0..k - 1].to_string();
-    let mut current_window:String;
+    let mut prev_window: String = sequence[0..k - 1].to_string();
+    let mut current_window: String;
     let mut graph = HashMap::new();
     let chars: Vec<char> = sequence.chars().collect();
     for window in chars[1..].windows(k - 1) {
-       current_window = window.into_iter().collect();
-       graph.entry(prev_window).or_insert(Vec::new()).push(current_window.clone());
-       prev_window = current_window; 
+        current_window = window.into_iter().collect();
+        graph
+            .entry(prev_window)
+            .or_insert(Vec::new())
+            .push(current_window.clone());
+        prev_window = current_window;
     }
     for (seq1, value) in &graph {
-          println!("{}->{}", seq1, value.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", "));
-    } 
+        println!(
+            "{}->{}",
+            seq1,
+            value
+                .into_iter()
+                .map(|i| i.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
 }
 
 fn main() {
@@ -249,4 +280,9 @@ fn main() {
     construct_overlap_graph();
 
     construct_de_bruijn_graph_from_string();
+
+    let s10 = "AAAACCCGGT";
+reverse_complement(s10);
+translation("AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA");
+
 }
