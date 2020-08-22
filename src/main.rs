@@ -12,14 +12,19 @@ pub fn reverse_complement(s: &str) {
 }
 
 pub fn translation(s: &str) {
-    let codons = hashmap!{"UUU"=>"F", "CUU"=>"L", "GUU"=>"V"};
-    for window in s.chars().collect::<Vec<char>>().windows(3) {
-        println!("{:?}", window);
+    let codons = hashmap!{"UUU"=>"F", "UUC"=>"F", "UUA"=>"L", "UUG"=>"L", "UCU"=>"S", "UCC"=>"S", "UCA"=>"S", "UCG"=>"S", "UAU"=>"Y", "UAC"=>"Y", "UGU"=>"C", "UGC"=>"C", "UGG"=>"W", "CUU"=>"L", "CUC"=>"L", "CUA"=>"L", "CUG"=>"L", "CCU"=>"P", "CCC"=>"P", "CCA"=>"P", "CCG"=>"P", "CAU"=>"H", "CAC"=>"H", "CAA"=>"Q", "CAG"=>"Q", "CGU"=>"R", "CGC"=>"R", "CGA"=>"R", "CGG"=>"R", "AUU"=>"I", "AUC"=>"I", "AUA"=>"I", "AUG"=>"M", "ACU"=>"T", "ACC"=>"T", "ACA"=>"T", "ACG"=>"T", "AAU"=>"N", "AAC"=>"N", "AAA"=>"K", "AAG"=>"K", "AGU"=>"S", "AGC"=>"S", "AGA"=>"R", "AGG"=>"R", "GUU"=>"V", "GUC"=>"V", "GUA"=>"V", "GUG"=>"V", "GCU"=>"A", "GCC"=>"A", "GCA"=>"A", "GCG"=>"A", "GAU"=>"D", "GAC"=>"D", "GAA"=>"E", "GAG"=>"E", "GGU"=>"G", "GGC"=>"G", "GGA"=>"G", "GGG"=>"G"};
 
+    let stop_codons = ["UAA", "UAG", "UGA"];
+
+    let mut protein_string = "".to_string();
+    for window in s.chars().collect::<Vec<char>>().chunks(3) {
         let codon = window.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join("");
-        println!("{}", codon);
-        println!("{:?}",codons.get(codon.to_string())  );
+        if stop_codons.contains(&&codon.as_str()) {
+            break;
+        }
+        protein_string+=&codons.get(codon.as_str()).unwrap_or(&"").to_string();
     }
+    println!("{:?}", protein_string)
 }
 
 
