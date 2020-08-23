@@ -2,31 +2,65 @@ use counter::Counter;
 use regex::Regex;
 use std::collections::HashMap;
 use std::collections::HashSet;
-#[macro_use] extern crate maplit;
+#[macro_use]
+extern crate maplit;
+
+pub fn transcribe(s: &str) -> std::string::String {
+    return s.replace("T", "U");
+}
 
 // Problem: rvec
-pub fn reverse_complement(s: &str) {
-    let complements = hashmap!{'A'=>'T', 'T'=>'A', 'C'=>'G', 'G'=>'C'};
+pub fn reverse_complement(s: &str) -> std::string::String {
+    let complements = hashmap! {'A'=>'T', 'T'=>'A', 'C'=>'G', 'G'=>'C'};
     let reverse_complement = s.chars().rev().map(|c| complements[&c]).collect::<String>();
-    println!("{}", reverse_complement);
+    return reverse_complement;
 }
 
-pub fn translation(s: &str) {
-    let codons = hashmap!{"UUU"=>"F", "UUC"=>"F", "UUA"=>"L", "UUG"=>"L", "UCU"=>"S", "UCC"=>"S", "UCA"=>"S", "UCG"=>"S", "UAU"=>"Y", "UAC"=>"Y", "UGU"=>"C", "UGC"=>"C", "UGG"=>"W", "CUU"=>"L", "CUC"=>"L", "CUA"=>"L", "CUG"=>"L", "CCU"=>"P", "CCC"=>"P", "CCA"=>"P", "CCG"=>"P", "CAU"=>"H", "CAC"=>"H", "CAA"=>"Q", "CAG"=>"Q", "CGU"=>"R", "CGC"=>"R", "CGA"=>"R", "CGG"=>"R", "AUU"=>"I", "AUC"=>"I", "AUA"=>"I", "AUG"=>"M", "ACU"=>"T", "ACC"=>"T", "ACA"=>"T", "ACG"=>"T", "AAU"=>"N", "AAC"=>"N", "AAA"=>"K", "AAG"=>"K", "AGU"=>"S", "AGC"=>"S", "AGA"=>"R", "AGG"=>"R", "GUU"=>"V", "GUC"=>"V", "GUA"=>"V", "GUG"=>"V", "GCU"=>"A", "GCC"=>"A", "GCA"=>"A", "GCG"=>"A", "GAU"=>"D", "GAC"=>"D", "GAA"=>"E", "GAG"=>"E", "GGU"=>"G", "GGC"=>"G", "GGA"=>"G", "GGG"=>"G"};
+pub fn translate(s: &str) {
+    let codons = hashmap! {"UUU"=>"F", "UUC"=>"F", "UUA"=>"L", "UUG"=>"L", "UCU"=>"S", "UCC"=>"S", "UCA"=>"S", "UCG"=>"S", "UAU"=>"Y", "UAC"=>"Y", "UGU"=>"C", "UGC"=>"C", "UGG"=>"W", "CUU"=>"L", "CUC"=>"L", "CUA"=>"L", "CUG"=>"L", "CCU"=>"P", "CCC"=>"P", "CCA"=>"P", "CCG"=>"P", "CAU"=>"H", "CAC"=>"H", "CAA"=>"Q", "CAG"=>"Q", "CGU"=>"R", "CGC"=>"R", "CGA"=>"R", "CGG"=>"R", "AUU"=>"I", "AUC"=>"I", "AUA"=>"I", "AUG"=>"M", "ACU"=>"T", "ACC"=>"T", "ACA"=>"T", "ACG"=>"T", "AAU"=>"N", "AAC"=>"N", "AAA"=>"K", "AAG"=>"K", "AGU"=>"S", "AGC"=>"S", "AGA"=>"R", "AGG"=>"R", "GUU"=>"V", "GUC"=>"V", "GUA"=>"V", "GUG"=>"V", "GCU"=>"A", "GCC"=>"A", "GCA"=>"A", "GCG"=>"A", "GAU"=>"D", "GAC"=>"D", "GAA"=>"E", "GAG"=>"E", "GGU"=>"G", "GGC"=>"G", "GGA"=>"G", "GGG"=>"G"};
 
+    let start_codon = "AUG";
     let stop_codons = ["UAA", "UAG", "UGA"];
-
-    let mut protein_string = "".to_string();
+    let mut protein_strings = Vec::new();
     for window in s.chars().collect::<Vec<char>>().chunks(3) {
-        let codon = window.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join("");
+        let codon = window
+            .into_iter()
+            .map(|i| i.to_string())
+            .collect::<Vec<_>>()
+            .join("");
         if stop_codons.contains(&&codon.as_str()) {
             break;
+        } else if codon.as_str() == start_codon {
+            &protein_strings.push("".to_string());
         }
-        protein_string+=&codons.get(codon.as_str()).unwrap_or(&"").to_string();
+        let aa = &codons.get(codon.as_str()).unwrap_or(&"").to_string();
+        for protein_string in protein_strings.iter_mut() {
+            *protein_string = protein_string.to_owned() + &aa;
+        }
     }
-    println!("{:?}", protein_string)
+    if protein_strings.len() > 0 {
+        for protein_string in protein_strings {
+            println!("{:?}", protein_string);
+        }
+    }
 }
 
+fn orfs(s: &str) {
+    let rna = transcribe(&s);
+    let rev = reverse_complement(&s);
+    let rev_rna = transcribe(&rev);
+    let ORFs = [
+        &rev_rna,
+        &rev_rna[1..],
+        &rev_rna[2..],
+        &rna,
+        &rna[1..],
+        &rna[2..],
+    ];
+    for ORF in ORFs.iter() {
+        translate(ORF);
+    }
+}
 
 // Problem ID: DNA
 pub fn count_nucleotides(s: &String) {
@@ -272,13 +306,13 @@ fn main() {
     let s9 = String::from("CAATCCAAC");
     generate_kmer_composition(&s9, 5);
 
-    let kmers = [
-        "ACCGA".to_string(),
-        "CCGAA".to_string(),
-        "CGAAG".to_string(),
-        "GAAGC".to_string(),
-        "AAGCT".to_string(),
-    ];
+    // let kmers = [
+    //     "ACCGA".to_string(),
+    //     "CCGAA".to_string(),
+    //     "CGAAG".to_string(),
+    //     "GAAGC".to_string(),
+    //     "AAGCT".to_string(),
+    // ];
 
     reconstruct_sequence_from_kmer();
 
@@ -287,7 +321,8 @@ fn main() {
     construct_de_bruijn_graph_from_string();
 
     let s10 = "AAAACCCGGT";
-reverse_complement(s10);
-translation("AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA");
-
+    reverse_complement(s10);
+    println!("{:?}", transcribe("GATGGAACTTGACTACGTAAATT"));
+    translate("AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA");
+    orfs("AGCCATGTAGCTAACTCAGGTTACATGGGGATGACCCCGCGACTTGGATTAGAGTCTCTTTTGGAATAAGCCTGAATGATCCGAGTAGCATCTCAG");
 }
