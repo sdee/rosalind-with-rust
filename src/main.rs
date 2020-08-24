@@ -5,6 +5,27 @@ use std::collections::HashSet;
 #[macro_use]
 extern crate maplit;
 
+// Problem BA1E: find Clumps in String
+pub fn find_clumps() {
+    let s = "CGGACTCGACAGATGTGAAGAAATGTGAAGACTGAGTGAAGAGAAGAGGAAACACGACACGACATTGCGACATAATGTACGAATGTAATGTGCCTATGGC";
+    let chars: Vec<char> = s.chars().collect();
+    let counter = chars
+        .windows(5)
+        .map(|w| w.into_iter().collect::<String>())
+        .collect::<Counter<_>>();
+    let clumps = counter
+        .iter()
+        .filter(|&(key, value)| *value > 3)
+        .collect::<Vec<_>>();
+    for (key, val) in clumps.iter() {
+        println!("{:?}", key);
+    }
+}
+
+pub fn generate_d_neighborhood() {
+    //
+}
+
 pub fn transcribe(s: &str) -> std::string::String {
     return s.replace("T", "U");
 }
@@ -176,6 +197,8 @@ pub fn find_splice_motif(s1: &String, s2: &String) {
 
 // Problem: Generate the k-mer Composition of a String
 pub fn generate_kmer_composition(s1: &String, k: usize) {
+    println!("KMER");
+    println!("{}", s1);
     let chars: Vec<char> = s1.chars().collect();
     for window in chars.windows(k) {
         let s: String = window.into_iter().collect();
@@ -325,4 +348,8 @@ fn main() {
     println!("{:?}", transcribe("GATGGAACTTGACTACGTAAATT"));
     translate("AUGGCCAUGGCGCCCAGAACUGAGAUCAAUAGUACCCGUAUUAACGGGUGA");
     orfs("AGCCATGTAGCTAACTCAGGTTACATGGGGATGACCCCGCGACTTGGATTAGAGTCTCTTTTGGAATAAGCCTGAATGATCCGAGTAGCATCTCAG");
+
+    println!("{}", "-------");
+    generate_kmer_composition(&String::from("ACGT"), 2);
+    find_clumps()
 }
