@@ -22,8 +22,17 @@ pub fn find_clumps() {
     }
 }
 
-pub fn generate_d_neighborhood() {
-    //
+pub fn approximate_matches(pattern :&str, sequence: &str, d: i8) {
+    // let s = "CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAATGCCTAGCGGCTTGTGGTTTCTCCTACGCTCC";
+    // let p = "ATTCTGGA";
+    let k = pattern.len();
+    let mut m = vec![];
+    for i in 0..sequence.len()-k+1 {
+        if calculate_hamming_distance(&sequence[i..i+k], &pattern) <= d {
+            m.push(i);
+        }
+    }
+    println!("{:?}", m.into_iter().map(|i| i.to_string()).collect::<Vec<_>>().join(" "));
 }
 
 pub fn transcribe(s: &str) -> std::string::String {
@@ -111,7 +120,7 @@ pub fn count_nucleotides(s: &String) {
 }
 
 // Problem ID: HAMM
-pub fn calculate_hamming_distance(s1: &String, s2: &String) {
+pub fn calculate_hamming_distance(s1: &str, s2: &str) -> i8 {
     let mut hamming_distance = 0;
     let iter = s1.chars().zip(s2.chars());
     for (i, j) in iter {
@@ -119,7 +128,8 @@ pub fn calculate_hamming_distance(s1: &String, s2: &String) {
             hamming_distance += 1;
         }
     }
-    println!("{}", hamming_distance);
+    // println!("{}", hamming_distance);    
+    return hamming_distance;
 }
 
 // Problem ID: GC
@@ -295,9 +305,9 @@ fn main() {
     let s = String::from("AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGC");
     count_nucleotides(&s);
 
-    let s1 = String::from("GAGCCTACTAACGGGAT");
-    let s2 = String::from("CATCGTAATGACGGCCT");
-    calculate_hamming_distance(&s1, &s2);
+    // let s1 = String::from("GAGCCTACTAACGGGAT");
+    // let s2 = String::from("CATCGTAATGACGGCCT");
+    // calculate_hamming_distance(&s1, &s2);
 
     let text = String::from(
         ">Rosalind_6404
@@ -351,5 +361,8 @@ fn main() {
 
     println!("{}", "-------");
     generate_kmer_composition(&String::from("ACGT"), 2);
-    find_clumps()
+    find_clumps();
+    let s11 = "CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAATGCCTAGCGGCTTGTGGTTTCTCCTACGCTCC";
+    let pattern = "ATTCTGGA";
+    approximate_matches(pattern, s11, 3);
 }
