@@ -2,6 +2,7 @@ use counter::Counter;
 use regex::Regex;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use factorial::Factorial;
 #[macro_use]
 extern crate maplit;
 
@@ -207,8 +208,6 @@ pub fn find_splice_motif(s1: &String, s2: &String) {
 
 // Problem: Generate the k-mer Composition of a String
 pub fn generate_kmer_composition(s1: &String, k: usize) {
-    println!("KMER");
-    println!("{}", s1);
     let chars: Vec<char> = s1.chars().collect();
     for window in chars.windows(k) {
         let s: String = window.into_iter().collect();
@@ -301,6 +300,24 @@ pub fn construct_de_bruijn_graph_from_string() {
     }
 }
 
+pub fn calculate_perfect_matchings() {
+    //assumes sames number of A as U and same number of C as G
+    let s = "AGCUAGUCAU";
+    let mut a_count:u8 = 0;
+    let mut g_count:u8 = 0;
+    for c in s.chars().into_iter() {
+        if c=='A' {
+            a_count+=1;
+        }
+        else if c=='G' {
+            g_count+=1;
+        }
+    }
+    println!("{:?}", a_count.factorial());
+    println!("{:?}", g_count.factorial());
+    println!("{:?}", g_count.factorial()*a_count.factorial());
+}
+
 fn main() {
     let s = String::from("AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGC");
     count_nucleotides(&s);
@@ -365,4 +382,5 @@ fn main() {
     let s11 = "CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAATGCCTAGCGGCTTGTGGTTTCTCCTACGCTCC";
     let pattern = "ATTCTGGA";
     approximate_matches(pattern, s11, 3);
+    calculate_perfect_matchings();
 }
